@@ -13,7 +13,7 @@ EB-NeRD(RecSys Challenge 2024) 뉴스 추천에서 **공식 hidden test 점수**
 - 입력은 **test 파일에 존재하고 t보다 엄격히 이전인 정보**만 쓴다. 같은 시각의 다른 impression은 "이전"이 아니다.
 - 쓸 수 있는 것: 대상 impression 자체의 속성(시각, 기기, 후보 목록과 수), 모든 사용자의 t 이전 impression(inview 목록 · 시각 · 기기), 사용자의 history 파일(노출 기간 이전 21일 클릭), 기사 메타와 공식 기사 벡터.
 - 쓸 수 없는 것: 그 주의 클릭(test에 없다. 라벨로만 쓴다), 방문이 끝나야 확정되는 값(`read_time`, `scroll_percentage`, `next_*`, 현재 페이지 `article_id`), 기사 파일의 누적치(`total_inviews`, `total_pageviews`, `total_read_time`), t 이후 이벤트, 다른 split의 behaviors.
-- 예외: 기사 메타는 최종 snapshot을 그대로 쓴다(수정 시각이 t 이후여도). 받아들인 한계다(`docs/limitations.md`).
+- **유일한 예외:** 기사 정보(제목 · 부제 · 본문 · category · topic · sentiment · 공식 벡터)는 `last_modified_time`이 t 이후여도 최종 snapshot 값을 그대로 쓴다. 수정 전 값이 데이터에 없어 복원할 수 없으므로 부득이하게 무시한다. 받아들인 한계다(`docs/limitations.md`). 이 밖의 예외는 없다.
 - 집계 지연은 흉내 내지 않는다. t 이전이면 즉시 사용 가능으로 본다.
 - 세 split(train · validation · test)은 **같은 코드 경로**로 만든다. split 이름으로 로직을 분기하지 않는다.
 
