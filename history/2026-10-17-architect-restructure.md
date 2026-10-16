@@ -68,6 +68,14 @@ git은 `main` 하나, 커밋은 Architect가 단위마다, 첫 커밋은 코드 
 6. 이 기록.
 7. 첫 커밋.
 
+## 이 PC의 원본 위치(읽기 전용, 2026-10-17 기준)
+
+구조 평가 4-5를 수용해 `docs/data.md`에서 여기로 옮겼다. WSL 이전 후에는 `$EBNERD_DATA_ROOT/raw/`가 유일한 참조다.
+
+- train · validation · 기사 · 벡터: `C:\EASEM-data\raw\`
+- hidden test: `C:\Users\naile\Desktop\당근\data\ebnerd_testset` (사본 `C:\ebnerd-data\raw\test`, sha256 검증됨)
+- 이전 저장소 문서 사본: `C:\ebnerd-data\archive\` (`docs-2026-10-16`, `repo-2026-10-17`)
+
 ## 다음 세션(WSL)에서 정할 것
 
 첫 구현 묶음. 후보: WSL 환경 확인과 `uv lock`, 원본 데이터를 WSL 디스크로 복사, 원본 parquet 로딩, 공식 지표 구현(QA 단위). hidden test 점수 확인 경로(Codabench)도 확인한다.

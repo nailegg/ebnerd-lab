@@ -1,6 +1,6 @@
 # ebnerd-lab 규칙
 
-이 파일이 저장소의 유일한 전역 규칙이다. 모든 agent는 세션 시작 시 이 파일과 `STATE.md`만 읽는다. `history/`는 명시적 지시가 있을 때만 연다. 이 파일은 사용자 승인 없이 바꾸지 않는다.
+이 파일이 저장소의 유일한 전역 규칙이다. 모든 agent는 세션 시작 시 이 파일과 `STATE.md`를 읽는다(`CLAUDE.md`가 둘을 자동 로드한다). `docs/`는 필요할 때 읽는다. `history/`는 Architect가 명시적으로 지정한 파일만 연다. 이 파일은 사용자 승인 없이 바꾸지 않는다.
 
 ## 1. 목표
 
@@ -8,7 +8,7 @@ EB-NeRD(RecSys Challenge 2024) 뉴스 추천에서 **공식 hidden test 점수**
 
 ## 2. 입력 경계
 
-대상 impression의 시각을 t라 한다.
+아래는 hidden test 국면의 경계다. 국면 전환은 `STATE.md`에서 선언한다. 대상 impression의 시각을 t라 한다.
 
 - 입력은 **test 파일에 존재하고 t보다 엄격히 이전인 정보**만 쓴다. 같은 시각의 다른 impression은 "이전"이 아니다.
 - 쓸 수 있는 것: 대상 impression 자체의 속성(시각, 기기, 후보 목록과 수), 모든 사용자의 t 이전 impression(inview 목록 · 시각 · 기기), 사용자의 history 파일(노출 기간 이전 21일 클릭), 기사 메타와 공식 기사 벡터.
@@ -16,6 +16,7 @@ EB-NeRD(RecSys Challenge 2024) 뉴스 추천에서 **공식 hidden test 점수**
 - **유일한 예외:** 기사 정보(제목 · 부제 · 본문 · category · topic · sentiment · 공식 벡터)는 `last_modified_time`이 t 이후여도 최종 snapshot 값을 그대로 쓴다. 수정 전 값이 데이터에 없어 복원할 수 없으므로 부득이하게 무시한다. 받아들인 한계다(`docs/limitations.md`). 이 밖의 예외는 없다.
 - 집계 지연은 흉내 내지 않는다. t 이전이면 즉시 사용 가능으로 본다.
 - 세 split(train · validation · test)은 **같은 코드 경로**로 만든다. split 이름으로 로직을 분기하지 않는다.
+- **집행:** 금지 열은 parquet를 여는 로더가 **모든 split에서** 제거한다. 라벨(`article_ids_clicked`)은 입력 프레임과 분리된 객체로만 반환한다. test 스키마(라벨 없음, `is_beyond_accuracy` 있음)의 작은 합성 프레임으로 feature 코드 전체를 돌리는 테스트를 둔다. 시간 경계는 QA의 "같은 시각 두 이벤트" 케이스가 잡는다.
 
 ## 3. 코드 기준 — Coder와 Observer가 공유하는 체크리스트
 
@@ -42,31 +43,39 @@ Karpathy의 네 원칙을 이 저장소의 체크리스트로 쓴다. Coder는 �
 | **Architect** | 메인 세션 | 사용자와 범위 · 구조 · 단위를 정한다. 단위 명세를 쓴다. 결정을 즉시 `STATE.md`에 반영한다. 커밋한다. Observer 지적에 수용 · 기각과 이유를 적는다 | 큰 코드를 직접 쓰지 않는다 |
 | **Coder** | `.claude/agents/coder.md` | 단위 하나를 구현하고 그 단위의 테스트를 쓴다(QA가 붙은 단위는 QA 테스트를 통과시킨다) | 범위 밖 파일 수정, 규칙 · State 수정 |
 | **QA** | `.claude/agents/qa.md` | Architect가 지정한 단위에만. 명세만 보고 정답 구현과 테스트를 쓴다 | Coder의 구현을 읽지 않는다 |
-| **Observer** | `.claude/agents/observer.md` | 구현 묶음이 끝날 때 한 번. §3 위반, 코드와 Rule · State의 모순, 이번 묶음의 결정이 State에 적혔는지를 본다. 보고만 한다 | 코드 수정, 취향 지적 |
+| **Observer** | `.claude/agents/observer.md` | 구현 묶음이 끝날 때 한 번. §3 위반, 코드와 Rule · State의 모순, 이번 묶음의 결정이 State에 적혔는지, State 은퇴 후보를 본다. 보고만 한다 | 코드 수정, 취향 지적 |
 
-Observer 보고서는 가공 없이 사용자에게 전달된다.
+Observer 보고서는 가공 없이 사용자에게 전달된다. subagent는 메인 세션의 대화를 보지 못한다. 전달은 프롬프트와 저장소 파일로만 된다.
 
 ## 5. 흐름
 
-1. Architect와 사용자가 **구현 묶음**(단위들의 집합)을 정하고 `STATE.md`에 적는다.
-2. Architect가 단위마다 명세를 쓴다. 명세 = 목표 한 문장, 범위(파일), 성공 기준, 금지 사항, QA 여부.
-3. QA가 붙은 단위는 QA가 명세에서 테스트를 쓰고, Coder가 통과시킨다. 아니면 Coder가 구현과 테스트를 함께 쓴다.
-4. 단위가 끝나면 Architect가 검증 명령을 실행하고 커밋한다.
-5. 묶음이 끝나면 Observer가 한 번 검토한다. Architect는 지적마다 수용 · 기각과 이유를 `STATE.md`에 적고, 수용한 것은 단위로 만들어 처리한다.
-6. 각 agent는 작업이 끝날 때 `history/`에 자기 기록을 남긴다.
+1. Architect와 사용자가 **구현 묶음**(단위들의 집합)을 정하고 `STATE.md`의 "현재 묶음"에 적는다.
+2. Architect가 단위마다 명세를 쓴다. 명세도 "현재 묶음"에 산다. 명세 = 목표 한 문장, 범위(파일), 성공 기준, 금지 사항, QA 여부. QA 단위는 **모듈 경로 · 공개 함수 시그니처 · "같은 시각 두 이벤트" 케이스**를 반드시 포함한다.
+3. QA가 붙은 단위는 QA가 명세에서 테스트를 쓰고, Coder가 통과시킨다. 아니면 Coder가 구현과 테스트를 함께 쓴다. **QA 테스트와 구현이 충돌하면 Coder는 멈추고 보고하며, Architect가 명세 · 테스트 · 구현 중 무엇이 틀렸는지 판정한다.**
+4. **Coder의 가정.** 출력 값이 달라지는 가정(결측 처리, 동률 순서, 경계 포함 여부, 기본값)은 Coder가 멈추고 묻는다. Architect는 답을 명세에 추가하고 테스트가 그것을 잡게 한다. 그 외 가정은 진행하고 끝에 보고한다. 명세에 넣지 않은 가정은 기각이며 Coder가 코드를 바꾼다.
+5. 단위가 끝나면 Architect가 검증 명령을 실행하고 커밋한다.
+6. 묶음이 끝나면 Observer가 한 번 검토한다. Architect는 지적마다 수용 · 기각과 이유를 `STATE.md`에 적고, 수용한 것은 단위로 만들어 처리한다. 묶음의 명세는 "국면 종료"로 은퇴한다.
+7. 각 agent는 작업이 끝날 때 `history/`에 자기 기록을 남긴다. Observer 기록은 보고서 전문을 담는다(유일한 감사 흔적).
 
-## 6. Rule · State · History
+## 6. 어디에 적는가 — Rule · State · History · docs
 
-- **Rule** = 이 파일과 `.claude/agents/*.md`. 바뀌지 않는 원칙만. 사용자 승인으로만 바꾼다.
-- **State** = `STATE.md`. 지금 유효한 결정, 현재 위치, 열린 질문, 한계. Architect만 수정한다. 1페이지를 목표로 하되 재지 않는다. 매 세션 시작에 Architect가 유효성을 확인한다.
-- **State 은퇴.** 결정은 **대체됨**(새 결정이 덮어씀) · **체화됨**(코드 · 설정 · 테스트 · Rule에 들어가 어기면 잡힘) · **국면 종료**(끝난 작업의 진행 상태) 중 하나가 되면 State에서 뺀다. 판별 질문: "이 줄 없이 다음 Architect가 이 결정을 뒤집으면 무엇이 잡는가?" 잡는 것이 없으면 길어도 남긴다. 은퇴는 Observer가 제안하고(무엇이 대신 잡는지 명시) Architect가 결정한다. Architect가 스스로 은퇴시킬 수도 있다. 어느 경우든 은퇴한 줄은 날짜 · 이유 · 체화 위치와 함께 `history/YYYY-MM-DD-architect-state-retire.md`로 옮긴다.
-- **History** = `history/YYYY-MM-DD-<역할>-<주제>.md`. 추가만 한다. 토론, 결정 근거, 작업 내용을 소상히 적는다. **지시 없이 열지 않는다.**
-- 결정은 내린 즉시 State에 적는다. 코드와 State가 다르면 코드가 틀린 것이다.
+**각 사실은 한 곳에만 산다.** 어디에 사는지는 순서대로 묻는다.
+
+1. 코드 · 설정 · 테스트에서 읽히는가? → 거기가 집이다. 문서에는 포인터만 둔다.
+2. 아니면, 끝나는 조건이 있는가? → **State.**
+3. 아니면(끝나는 조건이 없다) → **Rule.**
+
+- **Rule** = 이 파일과 `.claude/agents/*.md`. 끝나는 조건이 없는 원칙. 사용자 승인으로만 바꾼다. 은퇴가 없다. 코드 · 설정에서 읽히는 것은 적지 않는다.
+- **State** = `STATE.md`. 현재 위치, 현재 묶음(명세 포함), 유효한 결정, Observer 지적 처리, 열린 질문. Architect만 수정한다. Rule과 겹치는 내용은 포인터만 둔다. 1페이지를 목표로 하되 재지 않는다. 매 세션 시작에 Architect가 유효성을 확인한다.
+- **State 은퇴.** 결정은 **대체됨**(새 결정이 덮어씀) · **체화됨**(코드 · 설정 · 테스트 · Rule에 들어가 어기면 잡힘) · **국면 종료**(끝난 작업의 진행 상태) 중 하나가 되면 State에서 뺀다. 판별 질문: "이 줄 없이 다음 Architect가 이 결정을 뒤집으면 무엇이 잡는가?" 잡는 것이 없으면 길어도 남긴다. 은퇴는 Observer가 제안하고(무엇이 대신 잡는지 명시) Architect가 결정한다. **대체됨**만 Architect가 단독으로 은퇴시킬 수 있다. 은퇴한 줄은 날짜 · 이유 · 체화 위치와 함께 `history/YYYY-MM-DD-architect-state-retire.md`로 옮긴다. 처리가 끝난 Observer 지적 행은 다음 묶음 시작 시 같은 방식으로 옮긴다.
+- **History** = `history/YYYY-MM-DD-<역할>-<주제>.md`. 추가만 한다. 토론, 결정 근거, 작업 내용을 소상히 적는다. Architect가 명시적으로 지정한 파일만 연다.
+- **docs** = `docs/`. 데이터 · 도구에 관한 **사실**과 받아들인 한계. 결정이 아니다. Architect가 관리한다.
+- 결정은 내린 즉시 State에 적는다. 코드와 State가 다르면 코드가 틀린 것이다. Rule과 State가 겹치면 State 쪽이 은퇴 대상이다.
 
 ## 7. 환경
 
-- 개발: WSL2 Ubuntu, Python 3.11, `uv`. 학습: vast.ai GPU 인스턴스(저장소는 git으로 이동한다. 환경은 `pyproject.toml` · `uv.lock`만으로 재현돼야 한다).
-- 스택: polars · pyarrow(데이터), torch(모델), lightgbm(기준선), pytest · ruff(검증). 새 의존성은 Architect가 결정한다.
+- 개발: WSL2 Ubuntu, Python 3.11, `uv`. 저장소와 데이터 모두 WSL ext4 디스크에 둔다(`/mnt/c` 금지). 학습: vast.ai GPU 인스턴스. 저장소는 git으로 이동하고 서버에서는 `uv sync --locked`로 환경을 재현한다. 환경은 `pyproject.toml` · `uv.lock`만으로 재현돼야 한다.
+- 의존성은 `pyproject.toml` · `uv.lock`이 기록이다. 추가는 Architect가 결정하고 커밋 메시지에 이유를 적는다. torch는 **CUDA 12.8** PyTorch index를 명시해 lock한다(vast.ai에서는 CUDA ≥ 12.8 호스트만 빌린다. 이미지는 중요하지 않다). lightgbm은 CPU wheel.
 - 명령: `uv sync`, `uv run pytest`, `uv run ruff check .`
-- 데이터: `$EBNERD_DATA_ROOT`(WSL ext4 디스크, git 밖). `raw/`, `features/<version>/`, `runs/<run_id>/`.
+- 데이터: `$EBNERD_DATA_ROOT`(git 밖). `raw/`, `features/<version>/`, `runs/<run_id>/`. `<version>` 규칙은 첫 feature 빌드 직전에 State에서 정한다.
 - 언어: 문서(Rule · State · History · docs)는 한국어, 코드 · 식별자 · 주석 · 커밋 메시지는 영어.

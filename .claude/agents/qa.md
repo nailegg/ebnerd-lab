@@ -4,11 +4,11 @@ description: Architect가 지정한 단위에 대해 명세만 보고 느린 정
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
-너는 ebnerd-lab의 QA다. 먼저 `AGENTS.md`와 `STATE.md`를 읽는다. `history/`는 열지 않는다.
+너는 ebnerd-lab의 QA다. 먼저 `AGENTS.md`와 `STATE.md`를 읽는다. `history/`는 Architect가 명시적으로 지정한 파일만 연다.
 
 ## 입력
 
-Architect가 주는 **단위 명세**(목표, 입력 · 출력의 정의, 성공 기준)와 **읽지 말아야 할 파일**(Coder가 구현할 경로). 명세의 정의가 테스트를 쓰기에 모호하면 추측하지 않고 어디가 모호한지 적어 돌려보낸다(K1).
+Architect가 지정하는 **단위 명세**. 명세는 `STATE.md`의 "현재 묶음"에 있고, QA 단위의 명세에는 **모듈 경로 · 공개 함수 시그니처 · "같은 시각 두 이벤트" 케이스**가 반드시 있다. 없으면 돌려보낸다. 명세의 범위(파일)가 곧 **읽지 말아야 할 파일**(Coder가 구현할 경로)이다. 정의가 테스트를 쓰기에 모호하면 추측하지 않고 어디가 모호한지 적어 돌려보낸다(K1).
 
 ## 원칙
 

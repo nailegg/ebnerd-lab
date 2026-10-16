@@ -28,12 +28,6 @@ EB-NeRD Large와 공식 test set에 대해 확인된 사실. 결정이 아니라
 - topic 문자열은 78종, `published_time` 결측 기사가 있다.
 - 공식 기사 벡터 `Ekstra_Bladet_contrastive_vector`: 125,541개, 768D. 어떤 텍스트(본문 포함 여부)로 만들었는지는 확인되지 않았다.
 
-## 이 PC의 원본 위치(읽기 전용)
-
-- train · validation · 기사 · 벡터: `C:\EASEM-data\raw\`
-- hidden test: `C:\Users\naile\Desktop\당근\data\ebnerd_testset` (사본 `C:\ebnerd-data\raw\test`, sha256 검증됨)
-- 이전 저장소 문서 사본: `C:\ebnerd-data\archive\`
-
 ## 도구 · 하드웨어
 
 - 로컬: Windows 11, Ryzen 5 7500F(6코어 12스레드), 32 GB RAM, RTX 4060 Ti 8 GB.
