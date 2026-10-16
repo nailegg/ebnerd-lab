@@ -1,0 +1,38 @@
+[project]
+name = "ebnerd-lab"
+version = "0.1.0"
+description = "EB-NeRD (RecSys Challenge 2024) news recommendation lab"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "polars",
+    "pyarrow",
+    "numpy",
+    "torch",
+    "lightgbm",
+]
+classifiers = ["Private :: Do Not Upload"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "ebnerd"
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
