@@ -1,6 +1,6 @@
 # STATE
 
-갱신: 2026-10-17 (Architect). 1페이지 상한. 규칙은 `AGENTS.md`.
+갱신: 2026-10-17 (Architect). 규칙은 `AGENTS.md`. 은퇴한 결정은 `history/*-state-retire.md`.
 
 ## 현재 위치
 
@@ -15,7 +15,7 @@
 - **D5** 데이터 흐름: 로컬 WSL(CPU)에서 원본 → feature 빌드, vast.ai(GPU)에서 학습. 둘 사이의 전송 수단(외부 버킷 vs 직접 전송)은 첫 학습 직전에 정한다. 그때까지 push/pull 코드는 만들지 않는다.
 - **D6** 환경: WSL2 Ubuntu, Python 3.11, uv, polars · pyarrow · torch · lightgbm, pytest · ruff.
 - **D7** QA는 Architect가 지정한 단위에만 붙는다(시간 경계가 있는 feature, 평가 지표). 나머지는 Coder가 테스트까지 쓴다.
-- **D8** Observer는 묶음 끝에 한 번, 보고만. 보고서는 원문 그대로 사용자에게 전달. Architect는 지적마다 수용 · 기각과 이유를 아래 표에 적는다.
+- **D8** Observer는 묶음 끝에 한 번, 보고만. 보고서는 원문 그대로 사용자에게 전달. Architect는 지적마다 수용 · 기각과 이유를 아래 표에 적는다. State 은퇴도 Observer 제안 → Architect 결정(`AGENTS.md` §6).
 - **D9** git: `main` 하나. 커밋은 Architect가 단위마다. 커밋 메시지 영어.
 - **D10** 문서는 한국어, 코드 · 커밋은 영어.
 
