@@ -42,3 +42,9 @@ impression 단위로 계산해 평균한다. 주 지표 AUC, 보조 MRR · nDCG@
 ## 2024 우승팀 참고치(공식 validation AUC)
 
 단일 Transformer(v1170): 미래 · 과거 노출 정보 없음 0.7699, 과거만 0.8680, 미래 포함 0.8864, 앙상블 0.8924. 피처와 프로토콜이 달라 직접 비교 기준은 아니다.
+
+## Codabench(2026-10-17 확인)
+
+- 경쟁 2469 "Ekstra Bladet News Recommendation Competition". phase 0 "RecSys '24 Competition"(2024-04-03 – 06-22, 종료), phase 1 "EB-NeRD official testset"(2024-06-23 – 종료일 없음, Current). 하루 제출 상한 API 10 · 안내문 5. 채점은 최대 수 시간.
+- 제출 형식: `predictions.txt`만 담은 zip. 한 줄 `impression_id [순위,...]`. 순위는 1..n 정수(1이 최고). 행 순서는 test behaviors 원본과 같아야 한다. 예시 파일 `predictions_large_random.zip`(220 MB)이 공식 S3에 있다.
+- worker는 조직자가 직접 운영한다. 2025-07-26 채점 실패(codabench #1951), 2025-08-03 복구.
