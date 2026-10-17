@@ -35,10 +35,14 @@ EB-NeRD Large와 공식 test set에 대해 확인된 사실. 결정이 아니라
 - DuckDB 1.5.5(Windows)는 사용자–기사 쌍 9,616만 개의 정렬 list 집계(`list(... ORDER BY)`)에서 네이티브 크래시(0xc0000409)를 냈다. 스레드 · 메모리를 줄여도 같았다. long 형식으로 바꾸면 수 초에 끝났다.
 - Windows에서 보통 방식으로 띄운 장시간 프로세스는 Claude Code 세션 종료와 함께 죽었다. WSL로 옮기는 이유 중 하나다.
 - 참고 수치(이전 구현, DuckDB, 전체 데이터): split당 feature 빌드 30–90분, 최대 메모리 약 14 GB.
+- WSL2 VM 메모리 상한 15 GB(`.wslconfig` 미설정, 호스트 32 GB의 절반). 2026-10-17 validation 1.5억 후보 행을 한 번에 explode하다 VM째 죽었다. 실데이터 실행은 `systemd-run --user --scope -p MemoryMax=11G --quiet -- <명령>`으로 상한을 건다(user scope 동작 확인). 넘으면 프로세스만 죽고 VM은 산다. `unzip` 바이너리 없음.
+- WSL 안에서 torch 2.11.0+cu128이 로컬 RTX 4060 Ti를 잡는다(`torch.cuda.is_available()` True). 작은 GPU 실험은 vast.ai 없이 가능하다.
 
 ## 공식 지표
 
 impression 단위로 계산해 평균한다. 주 지표 AUC, 보조 MRR · nDCG@5 · nDCG@10. 제출은 impression마다 inview 후보의 순위 list.
+
+- ebnerd-benchmark 구현은 `np.argsort(score)[::-1]`로 정렬하므로 동률 후보가 입력의 역순이 된다. MRR은 모든 양성의 역순위 합을 양성 수로 나눈다(첫 양성만 보는 통상 MRR과 다르다).
 
 ## 2024 우승팀 참고치(공식 validation AUC)
 

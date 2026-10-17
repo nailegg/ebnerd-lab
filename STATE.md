@@ -4,7 +4,7 @@
 
 ## 현재 위치
 
-U1–U5 완료. 남은 것은 U6: 사용자가 `$EBNERD_DATA_ROOT/runs/recency/predictions_recency.zip`을 Codabench에 제출하고 hidden 점수를 받는다. 그 뒤 Observer 검토.
+U1–U5 완료, U6 제출함(Codabench 채점 대기). Observer 검토 완료, 지적 처분 적용 중(U7 · U8). 둘째 묶음은 워크플로에 Plan 도입. 맥락은 다른 세션(ebnerd-lab-31)에서 가져오는 중.
 
 ## 현재 묶음: 끝에서 끝까지 한 번
 
@@ -17,7 +17,18 @@ U1–U5 완료. 남은 것은 U6: 사용자가 `$EBNERD_DATA_ROOT/runs/recency/p
 | U3 로더 | Coder | 완료 |
 | U4 공식 지표 | QA → Coder | 완료 |
 | U5 recency 기준선 + 평가 · 제출 스크립트 | Coder | 완료. validation AUC 0.5004 · MRR 0.3067 · nDCG@5 0.3355 · nDCG@10 0.4207 (무작위 수준. 누설 신호 `total_inviews`로 평가기 정상 확인) |
-| U6 Codabench 제출, hidden 점수를 이 파일에 기록 | 사용자 + Architect | 대기 |
+| U6 Codabench 제출, hidden 점수를 이 파일에 기록 | 사용자 + Architect | 제출함, 채점 대기 |
+| U7 제출 전 behaviors 대조 검사 + test 스키마 연쇄 테스트(Observer 지적 2 · 3) | Coder | 착수 |
+| U8 torch를 cu128 index로 re-lock(Observer 지적 1) · docs 정리(지적 4 · 6) | Architect | 완료 |
+
+### U7 제출 검사 + test 스키마 연쇄 테스트 명세
+
+- 목표: 제출 zip을 쓰기 전에 순위 파일을 해당 split의 behaviors와 대조하고, test 스키마 프레임으로 `rank_recency → make_submission` 연쇄가 도는 것을 테스트로 고정한다.
+- 범위: `scripts/make_submission.py`, `tests/test_submission.py`.
+- 인터페이스: `make_submission.py --split S --ranks P --out Z`(`--split` 추가).
+- 성공 기준: (a) 쓰기 전에 `load_behaviors(S)`와 대조한다. 행 수 동일, `impression_id` 열이 순서까지 동일, 각 행의 `ranks` 길이 = `article_ids_inview` 길이, 각 행이 1..n 순열. 하나라도 어긋나면 어떤 검사가 실패했는지 담은 `SystemExit`, zip은 만들지 않는다. 검사는 polars 표현식으로(행 루프 금지. 순열은 `list.sort()`가 `int_ranges(1, n+1)`과 같은지). (b) 연쇄 테스트에 test형 fixture(라벨 열 없음, `is_beyond_accuracy` 있음, `impression_id` 0인 행 두 개, 금지 열 `read_time` · `scroll_percentage` 포함)를 추가해 `rank_recency → make_submission`이 통과하고 zip 줄이 기대와 같은지 확인. `evaluate`는 이 fixture에서 `ColumnNotFoundError`. (c) 검사 실패 케이스 하나(순열 깨짐 또는 행 수 불일치)가 `SystemExit`. (d) 실데이터: `systemd-run --user --scope -p MemoryMax=11G` 아래 test split로 다시 실행해 검사 통과, 생성 zip의 sha256을 기존 `predictions_recency.zip`과 비교해 보고(다르면 새 것으로 덮어쓰고 보고).
+- 금지: 다른 스크립트 · 모듈 수정, 새 의존성, 옵션 추가.
+- QA: 없음.
 
 ### U3 로더 명세
 
@@ -57,12 +68,20 @@ U1–U5 완료. 남은 것은 U6: 사용자가 `$EBNERD_DATA_ROOT/runs/recency/p
 - **D6** 제출은 Codabench 2469 phase "EB-NeRD official testset"(종료일 없음, 하루 5회). 형식: `predictions.txt`만 담은 zip, 한 줄 `impression_id [순위,...]`, 행 순서는 test behaviors 원본, 순위 1..n(1이 최고). BA 행은 id 0이지만 행 순서로 채점한다. 점수→순위 동률은 입력 순서.
 - **D7** 원본 배치: `$EBNERD_DATA_ROOT/raw/{articles,contrastive_vector}.parquet`, `raw/{train,validation,test}/{behaviors,history}.parquet`. test 동봉 articles는 sha 동일이라 두지 않는다. 복사 스크립트는 만들지 않고 sha256만 기록.
 - **D8** 첫 기준선은 recency(기사 메타만). "t 이전 노출 수" 인기도는 시간 경계 QA가 필요하므로 둘째 묶음.
+- **D9** `scripts/*.py`는 패키지로 만들지 않는다. 각 스크립트는 `main(argv=None)`을 두고, 테스트는 `importlib`로 파일 경로에서 로드해 `main([...])`을 직접 부른다.
+- **D10** 지표의 동률 순서는 입력 순서(stable)로 고정한다. 공식 ebnerd-benchmark는 동률을 역순으로 두어(`docs/data.md`) raw score 동률이 있으면 수치가 다를 수 있다. 제출은 순열이라 hidden 점수에는 무관.
 
 ## Observer 지적 처리
 
 | 날짜 | 지적 | 처분 | 이유 |
 |---|---|---|---|
-| — | — | — | — |
+| 10-17 | torch가 PyPI CUDA 13 wheel로 lock됨(§7 위반) | 수용 → U8 | 명백한 Rule–설정 모순 |
+| 10-17 | 연쇄 테스트에 test 스키마 fixture 없음(§2 집행) | 수용 → U7 | 싸게 넣을 수 있고, 이후 feature 단위 명세의 필수 항목 |
+| 10-17 | zip 검증이 스크래치에만(K4) | 수용 → U7 | `make_submission.py`가 쓰기 전에 항상 검사 |
+| 10-17 | 동률 순서가 공식 구현과 다름, 판정 미기록 | 수용 → D10 · docs | 실질 영향 없음, 사실만 기록 |
+| 10-17 | importlib 스크립트 로딩 결정 미반영 | 수용 → D9 | |
+| 10-17 | systemd-run 절차 · 15 GB 사실의 집 | 수용 → U8(docs) | 환경 사실이므로 `docs/data.md` |
+| 10-17 | 은퇴 후보 D4 · D7 · D8 · D6 일부 · U3–U5 명세 · 한계 중복 | 수용, U6 뒤 적용 | hidden 점수를 적고 묶음을 닫을 때 retire 파일로 |
 
 ## 열린 질문
 
@@ -72,4 +91,4 @@ U1–U5 완료. 남은 것은 U6: 사용자가 `$EBNERD_DATA_ROOT/runs/recency/p
 
 ## 한계
 
-`docs/limitations.md`. 추가: Codabench는 조직자가 직접 돌리는 worker라 예고 없이 멈출 수 있다(2025-07 한 차례, 8월 복구).
+`docs/limitations.md`.
