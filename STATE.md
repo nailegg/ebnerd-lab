@@ -4,9 +4,20 @@
 
 ## 현재 위치
 
-U1–U5 · U7 · U8 완료, U6 제출함(Codabench 채점 대기). Observer 지적 처분 적용 끝. 둘째 묶음 "Plan 도입" 안을 사용자에게 올려 승인 대기.
+둘째 묶음 "Plan 도입" 진행 중: P1 · P2 · P3 적용, 사용자가 `PLAN.md` 검토 중. 첫 묶음은 U6(Codabench 채점 대기)만 남아 닫는 중.
 
-## 현재 묶음: 끝에서 끝까지 한 번
+## 현재 묶음: Plan 도입
+
+플랜이 STATE 세 곳(현재 위치의 "다음은", 열린 질문의 시점 조건부 항목, D5의 "첫 학습 직전")에 흩어져 §6을 어기고 있었다. `PLAN.md`를 미래 층으로 두어 통합한다. 코드 없음, 전부 Architect.
+
+| 단위 | 내용 | 상태 |
+|---|---|---|
+| P1 Rule 수정 | `AGENTS.md` §4 · §5 1단계 · §5 6단계 · §6, `observer.md` 검사 3 | 완료(사용자 승인) |
+| P2 `PLAN.md` 작성 | 국면 · 만족선 · M1–M5 · 시점이 오면 정할 것 | 초안 작성, 사용자 검토 중 |
+| P3 STATE 정리 | 열린 질문 셋과 D5 후반을 Plan으로 이동 | 완료 |
+| 첫 묶음 닫기 | U6 점수 기록 → Observer 수용 은퇴분(D4 · D7 · D8 · D6 일부 · U3–U8 명세)을 retire 파일로, Plan M1 완료 | U6 대기 |
+
+## 닫는 중: 끝에서 끝까지 한 번
 
 원본 → 로더 → 최단 기준선 → 제출 zip → Codabench hidden 점수를 한 줄로 관통해 점수 경로를 검증하고, 로컬 validation 점수와 hidden 점수의 첫 대응점을 얻는다.
 
@@ -64,7 +75,7 @@ U1–U5 · U7 · U8 완료, U6 제출함(Codabench 채점 대기). Observer 지�
 - **D1** 점수판은 공식 hidden test 점수. 자체 validation protocol 연구는 그 뒤 후속(국면 2). 국면 전환 시 `AGENTS.md` §2의 "test 파일에 존재" 조항을 다시 본다.
 - **D3** test의 beyond-accuracy 행(`impression_id` 0, 200,000개, 같은 시각, 같은 250개 후보)은 모든 집계의 원천 이벤트에서 뺀다. 합성 행이라 노출 수를 부풀린다. 대상 행으로서는 점수를 낸다(제출에 필요). 로더 · feature 코드와 테스트에 체화되면 은퇴.
 - **D4** 이전 저장소(EASEM, `Desktop/당근`)의 결정과 코드는 승계하지 않는다. 사실만 `docs/data.md`. 첫 묶음 뒤 국면 종료로 은퇴 예정.
-- **D5** 로컬 WSL(CPU)에서 원본 → feature 빌드, vast.ai(GPU)에서 학습. 둘 사이의 전송 수단(외부 버킷 vs 직접 전송)은 첫 학습 직전에 정한다. 그때까지 push/pull 코드는 만들지 않는다. 권장은 Cloudflare R2 + rclone.
+- **D5** 로컬 WSL(CPU)에서 원본 → feature 빌드, vast.ai(GPU)에서 학습. 전송 수단은 Plan M4에서 정하고, 그때까지 push/pull 코드는 만들지 않는다.
 - **D6** 제출은 Codabench 2469 phase "EB-NeRD official testset"(종료일 없음, 하루 5회). 형식: `predictions.txt`만 담은 zip, 한 줄 `impression_id [순위,...]`, 행 순서는 test behaviors 원본, 순위 1..n(1이 최고). BA 행은 id 0이지만 행 순서로 채점한다. 점수→순위 동률은 입력 순서.
 - **D7** 원본 배치: `$EBNERD_DATA_ROOT/raw/{articles,contrastive_vector}.parquet`, `raw/{train,validation,test}/{behaviors,history}.parquet`. test 동봉 articles는 sha 동일이라 두지 않는다. 복사 스크립트는 만들지 않고 sha256만 기록.
 - **D8** 첫 기준선은 recency(기사 메타만). "t 이전 노출 수" 인기도는 시간 경계 QA가 필요하므로 둘째 묶음.
@@ -85,9 +96,7 @@ U1–U5 · U7 · U8 완료, U6 제출함(Codabench 채점 대기). Observer 지�
 
 ## 열린 질문
 
-- 전송 수단(D5). 첫 학습 직전.
-- `features/<version>` 규칙. 첫 feature 빌드 직전. 유력안: 빌드 커밋 short SHA + manifest(커밋 · 입력 sha256 · 생성 시각).
-- run_id · seed · 설정 스냅샷 규칙. 첫 학습 직전.
+없음. 시점 조건부 항목은 `PLAN.md` "시점이 오면 정할 것".
 
 ## 한계
 
