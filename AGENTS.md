@@ -70,7 +70,7 @@ Observer 보고서는 가공 없이 사용자에게 전달된다. subagent는 �
 - **State** = `STATE.md`. 현재 위치, 현재 묶음(명세 포함), 유효한 결정, Observer 지적 처리, 열린 질문. Architect만 수정한다. Rule과 겹치는 내용은 포인터만 둔다. 1페이지를 목표로 하되 재지 않는다. 매 세션 시작에 Architect가 유효성을 확인한다.
 - **State 은퇴.** 결정은 **대체됨**(새 결정이 덮어씀) · **체화됨**(코드 · 설정 · 테스트 · Rule에 들어가 어기면 잡힘) · **국면 종료**(끝난 작업의 진행 상태) 중 하나가 되면 State에서 뺀다. 판별 질문: "이 줄 없이 다음 Architect가 이 결정을 뒤집으면 무엇이 잡는가?" 잡는 것이 없으면 길어도 남긴다. 은퇴는 Observer가 제안하고(무엇이 대신 잡는지 명시) Architect가 결정한다. **대체됨**만 Architect가 단독으로 은퇴시킬 수 있다. 은퇴한 줄은 날짜 · 이유 · 체화 위치와 함께 `history/YYYY-MM-DD-architect-state-retire.md`로 옮긴다. 처리가 끝난 Observer 지적 행은 다음 묶음 시작 시 같은 방식으로 옮긴다.
 - **History** = `history/YYYY-MM-DD-<역할>-<주제>.md`. 추가만 한다. 토론, 결정 근거, 작업 내용을 소상히 적는다. Architect가 명시적으로 지정한 파일만 연다.
-- **docs** = `docs/`. 데이터 · 도구에 관한 **사실**과 받아들인 한계. 결정이 아니다. Architect가 관리한다.
+- **docs** = `docs/`. 데이터 · 도구에 관한 **사실**, 받아들인 한계, 그리고 **채택 전 설계 제안**(`docs/design/`). 제안의 채택 여부와 시점은 Plan · State가 정한다. 결정이 아니다. Architect가 관리한다.
 - 결정은 내린 즉시 State에 적는다. 코드와 State가 다르면 코드가 틀린 것이다. Rule과 State가 겹치면 State 쪽이 은퇴 대상이다.
 
 ## 7. 환경

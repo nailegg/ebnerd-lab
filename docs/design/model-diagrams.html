@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ebnerd-lab 후보 모델 구조</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --fg: #1c2229; --muted: #5b6672; --line: #c3cad2;
+  --keep: #1f6f8b; --keep-soft: #e3f0f4;
+  --cut: #c2402f; --cut-soft: #fbe9e6;
+  --frozen: #8a6d1f; --frozen-soft: #f6efd9;
+  --policy: #7a4fa0; --policy-soft: #efe6f6;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161a; --surface: #1a2026; --fg: #e4e8ec; --muted: #9aa5b0; --line: #3a444e;
+    --keep: #6cc0db; --keep-soft: #16303a; --cut: #f0806f; --cut-soft: #3a1f1b;
+    --frozen: #d9b45a; --frozen-soft: #332a14; --policy: #bd98df; --policy-soft: #2b2036; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161a; --surface: #1a2026; --fg: #e4e8ec; --muted: #9aa5b0; --line: #3a444e;
+  --keep: #6cc0db; --keep-soft: #16303a; --cut: #f0806f; --cut-soft: #3a1f1b;
+  --frozen: #d9b45a; --frozen-soft: #332a14; --policy: #bd98df; --policy-soft: #2b2036; color-scheme: dark;
+}
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.65; }
+.page { max-width: 1180px; margin: 0 auto; padding: 36px 16px 56px; display: grid; gap: 28px; }
+header { display: grid; gap: 8px; max-width: 68ch; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+h1 { margin: 0; font-size: 28px; line-height: 1.25; font-weight: 700; text-wrap: balance; }
+h2 { margin: 0; font-size: 19px; font-weight: 600; text-wrap: balance; }
+p { margin: 0; }
+.lede { color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 22px; height: 14px; border-radius: 3px; border: 1.5px solid var(--line); background: var(--surface); }
+.sw.keep { background: var(--keep-soft); border-color: var(--keep); }
+.sw.cut { background: var(--cut-soft); border: 1.5px dashed var(--cut); }
+.sw.frozen { background: var(--frozen-soft); border-color: var(--frozen); }
+.sw.policy { background: var(--policy-soft); border-color: var(--policy); }
+figure { margin: 0; display: grid; gap: 12px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+svg.model { display: block; width: 100%; min-width: 900px; height: auto; color: var(--fg); font-family: var(--font-body); }
+figcaption { font-size: 13px; color: var(--muted); max-width: 80ch; }
+.grp { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.grp-title { fill: var(--fg); font-size: 13px; font-weight: 600; }
+.chip { fill: var(--keep-soft); stroke: var(--keep); stroke-width: 1.2; }
+.chip-frozen { fill: var(--frozen-soft); stroke: var(--frozen); stroke-width: 1.2; }
+.chip-policy { fill: var(--policy-soft); stroke: var(--policy); stroke-width: 1.2; }
+.policy-tag { fill: var(--policy); font-size: 11px; font-weight: 600; }
+.section-break { border-top: 1px solid var(--line); padding-top: 28px; display: grid; gap: 20px; }
+.chip-cut { fill: var(--cut-soft); stroke: var(--cut); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.chip-text { fill: var(--fg); font-size: 12px; }
+.cut-text { fill: var(--cut); font-size: 12px; }
+.cut-tag { fill: var(--cut); font-size: 11px; font-weight: 600; }
+.strike { stroke: var(--cut); stroke-width: 1.2; }
+.mod { fill: var(--surface); stroke: var(--fg); stroke-width: 1.3; }
+.mod-strong { fill: var(--keep-soft); stroke: var(--keep); stroke-width: 1.6; }
+.mod-title { fill: var(--fg); font-size: 13px; font-weight: 600; }
+.mod-sub { fill: var(--muted); font-size: 11.5px; }
+.mono { font-family: var(--font-mono); }
+.wire { stroke: var(--fg); stroke-width: 1.3; fill: none; }
+.wire-label { fill: var(--muted); font-size: 11.5px; }
+.label-box { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 2 3; }
+.dot { fill: var(--fg); }
+.arrowhead { fill: var(--fg); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .03em; }
+td.cut { color: var(--cut); }
+td.keep { color: var(--keep); }
+.tablewrap { overflow-x: auto; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+code { font-family: var(--font-mono); font-size: .92em; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow">ebnerd-lab · docs/design · 후보 설계 (채택 전)</div>
+    <h1>후보 모델 구조</h1>
+    <p class="lede">EB-NeRD 뉴스 추천을 위한 두 후보 모델과 비교 기준(2024 우승팀 모델)의 구조도입니다. 글로 된 설명은 <code>docs/design/models.md</code>에 있고, 이 페이지는 그 그림입니다. 모든 입력은 <code>AGENTS.md</code> "2. 입력 경계" 안에 있어야 합니다. 그 주의 클릭은 test 파일에 없으므로 학습 목표(loss)로만 쓰고 입력으로는 쓰지 않습니다.</p>
+  </header>
+
+  <!-- ===================== 모델 A ===================== -->
+  <section class="section-break" style="border-top:0; padding-top:0;">
+    <header>
+      <div class="eyebrow">모델 A</div>
+      <h2>공식 768D 기사 벡터를 쓰는 기준 Transformer</h2>
+      <p class="lede">기사 메타와 공식 768D 내용 벡터로 기사 표현을 만들고, 후보가 자기 개인 기록(직전 21일 클릭, H21)을 cross-attention으로 읽어 개인화한 뒤, 기간 내 인기 숫자와 합쳐 후보 집합 Transformer로 채점합니다.</p>
+    </header>
+
+    <div class="legend" aria-label="범례">
+      <span><i class="sw keep"></i>쓰는 입력 (경계 안)</span>
+      <span><i class="sw cut"></i>경계 밖이라 쓰지 않는 입력</span>
+      <span><i class="sw frozen"></i>학습하지 않는 고정 입력</span>
+      <span><i class="sw"></i>학습되는 모듈 (번호는 models.md 1.2절의 모듈 번호)</span>
+    </div>
+
+    <figure>
+      <div class="scroll">
+        <svg class="model" viewBox="0 0 1130 740" role="img" aria-label="모델 A 구조: 네 입력 묶음(impression 정보, 기사 정보, 기간 내 인기, 개인 기록 H21)이 각각 인코더를 거쳐, 후보 토큰 C0가 기록 토큰을 cross-attention으로 읽은 결과와 gate로 합쳐지고, impression 토큰 I0와 함께 8층 후보 집합 Transformer와 출력층을 지나 후보별 점수가 됩니다. 정답은 loss에만 연결됩니다.">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="arrowhead"/>
+            </marker>
+          </defs>
+
+          <!-- Row 0: impression -->
+          <rect class="grp" x="16" y="20" width="270" height="68" rx="8"/>
+          <text class="grp-title" x="28" y="40">impression 정보 (화면 1개)</text>
+          <rect class="chip" x="26" y="52" width="100" height="24" rx="5"/>
+          <text class="chip-text" x="36" y="68">시각 · 기기</text>
+          <rect class="chip-cut" x="132" y="52" width="144" height="24" rx="5"/>
+          <text class="cut-text" x="142" y="68">read · scroll</text>
+          <line class="strike" x1="140" y1="64" x2="218" y2="64"/>
+          <text class="cut-tag" x="268" y="68" text-anchor="end">✕ 사후값</text>
+
+          <rect class="mod" x="336" y="26" width="190" height="56" rx="7"/>
+          <text class="mod-title" x="348" y="49">④ impression 인코더</text>
+          <text class="mod-sub" x="348" y="68">→ I0 토큰 (128D)</text>
+          <line class="wire" x1="286" y1="54" x2="332" y2="54" marker-end="url(#arrow)"/>
+
+          <!-- Row 1: article -->
+          <rect class="grp" x="16" y="110" width="270" height="98" rx="8"/>
+          <text class="grp-title" x="28" y="130">기사 정보 (후보 · 기록 공통)</text>
+          <rect class="chip" x="26" y="142" width="250" height="24" rx="5"/>
+          <text class="chip-text" x="36" y="158">sentiment · 발행 후 경과 · topic · category</text>
+          <rect class="chip-frozen" x="26" y="172" width="250" height="24" rx="5"/>
+          <text class="chip-text" x="36" y="188">공식 기사 내용 벡터 768D (고정)</text>
+
+          <rect class="mod" x="336" y="124" width="190" height="70" rx="7"/>
+          <text class="mod-title" x="348" y="146">①② 기사 표현</text>
+          <text class="mod-sub" x="348" y="164">메타 임베딩 + 768D 어댑터</text>
+          <text class="mod-sub" x="348" y="181">add + LayerNorm → e (128D)</text>
+          <line class="wire" x1="286" y1="159" x2="332" y2="159" marker-end="url(#arrow)"/>
+
+          <!-- Row 2: popularity -->
+          <rect class="grp" x="16" y="232" width="270" height="128" rx="8"/>
+          <text class="grp-title" x="28" y="252">기간 내 인기 (t 이전 10분 · 60분, BA 제외)</text>
+          <rect class="chip" x="26" y="264" width="250" height="24" rx="5"/>
+          <text class="chip-text" x="36" y="280">후보 내 최신 순위</text>
+          <rect class="chip" x="26" y="294" width="250" height="24" rx="5"/>
+          <text class="chip-text" x="36" y="310">전체 사용자 노출 수 · 노출 순위</text>
+          <rect class="chip-cut" x="26" y="324" width="250" height="24" rx="5"/>
+          <text class="cut-text" x="36" y="340">클릭 수 · 클릭 순위</text>
+          <line class="strike" x1="34" y1="336" x2="146" y2="336"/>
+          <text class="cut-tag" x="268" y="340" text-anchor="end">✕ test에 없음</text>
+
+          <rect class="mod" x="336" y="261" width="190" height="70" rx="7"/>
+          <text class="mod-title" x="348" y="283">③ 후보 문맥 인코더</text>
+          <text class="mod-sub" x="348" y="301">e_cand + 문맥 숫자 5개</text>
+          <text class="mod-sub" x="348" y="318">→ C0 후보 토큰 (128D)</text>
+          <line class="wire" x1="286" y1="296" x2="332" y2="296" marker-end="url(#arrow)"/>
+          <line class="wire" x1="431" y1="194" x2="431" y2="257" marker-end="url(#arrow)"/>
+
+          <!-- Row 3: history H21 -->
+          <rect class="grp" x="16" y="384" width="270" height="98" rx="8"/>
+          <text class="grp-title" x="28" y="404">개인 기록 H21 (클릭한 기사)</text>
+          <rect class="chip" x="26" y="416" width="250" height="24" rx="5"/>
+          <text class="chip-text" x="36" y="432">history 파일 클릭 (직전 21일, ≤100개)</text>
+          <rect class="chip-cut" x="26" y="446" width="250" height="24" rx="5"/>
+          <text class="cut-text" x="36" y="462">이번 주 노출 기간 안의 클릭</text>
+          <line class="strike" x1="34" y1="458" x2="154" y2="458"/>
+          <text class="cut-tag" x="268" y="462" text-anchor="end">✕ test에 없음</text>
+
+          <rect class="mod" x="336" y="398" width="190" height="70" rx="7"/>
+          <text class="mod-title" x="348" y="420">⑦ 기록 토큰</text>
+          <text class="mod-sub" x="348" y="438">기사 표현(①②) 공유</text>
+          <text class="mod-sub" x="348" y="455">→ H21 토큰들 (128D)</text>
+          <line class="wire" x1="286" y1="433" x2="332" y2="433" marker-end="url(#arrow)"/>
+
+          <rect class="mod-strong" x="600" y="393" width="190" height="80" rx="7"/>
+          <text class="mod-title" x="612" y="415">⑧–⑩ 후보 → 기록</text>
+          <text class="mod-sub" x="612" y="433">cross-attention (head 4)</text>
+          <text class="mod-sub" x="612" y="450">+ 후보별 gate</text>
+          <text class="mod-sub mono" x="612" y="466">→ α21 · P21</text>
+
+          <circle class="dot" cx="560" cy="296" r="3"/>
+          <path class="wire" d="M560,296 V418 H596" marker-end="url(#arrow)"/>
+          <text class="wire-label" x="566" y="410">Q</text>
+          <path class="wire" d="M526,448 H596" marker-end="url(#arrow)"/>
+          <text class="wire-label" x="540" y="442">K, V</text>
+
+          <!-- Not used in the first experiment (inside the boundary) -->
+          <rect class="label-box" x="16" y="506" width="270" height="62" rx="8"/>
+          <text class="mod-title" x="28" y="528">경계 안이지만 첫 실험에서 뺀 것</text>
+          <text class="mod-sub" x="28" y="550">이 사용자에게 이번 주 t 이전 노출된 후보인가 (ablation 후보)</text>
+
+          <!-- Right column -->
+          <rect class="mod" x="850" y="250" width="250" height="190" rx="8"/>
+          <text class="mod-title" x="864" y="274">융합 (학습 파라미터 없음)</text>
+          <text class="mod-sub mono" x="864" y="300">C1 = C0</text>
+          <text class="mod-sub mono" x="864" y="424">   + α21 · P21</text>
+
+          <line class="wire" x1="526" y1="296" x2="846" y2="296" marker-end="url(#arrow)"/>
+          <text class="wire-label" x="640" y="288">C0 (후보마다 1개)</text>
+          <path class="wire" d="M790,433 H815 V420 H846" marker-end="url(#arrow)"/>
+
+          <rect class="mod-strong" x="850" y="470" width="250" height="90" rx="8"/>
+          <text class="mod-title" x="864" y="494">⑪ 후보 집합 Transformer</text>
+          <text class="mod-sub" x="864" y="514">8층 · 128D · head 4 · 위치 정보 없음</text>
+          <text class="mod-sub mono" x="864" y="536">입력 [I0, C1₁, …, C1ₙ]</text>
+          <line class="wire" x1="975" y1="440" x2="975" y2="466" marker-end="url(#arrow)"/>
+          <path class="wire" d="M526,54 H1116 V515 H1104" marker-end="url(#arrow)"/>
+          <text class="wire-label" x="800" y="46">I0 (impression 토큰)</text>
+
+          <rect class="mod" x="850" y="590" width="250" height="50" rx="7"/>
+          <text class="mod-title" x="864" y="620">⑫ 출력층 → 후보별 점수</text>
+          <line class="wire" x1="975" y1="560" x2="975" y2="586" marker-end="url(#arrow)"/>
+
+          <rect class="mod" x="850" y="670" width="250" height="50" rx="7"/>
+          <text class="mod-title" x="864" y="700">loss: BCE + ListNet (λ = 0.1)</text>
+          <line class="wire" x1="975" y1="640" x2="975" y2="666" marker-end="url(#arrow)"/>
+
+          <rect class="label-box" x="600" y="670" width="190" height="50" rx="7"/>
+          <text class="mod-title" x="612" y="691">정답 (클릭 여부)</text>
+          <text class="mod-sub" x="612" y="709">학습 목표로만 사용</text>
+          <line class="wire" x1="790" y1="695" x2="846" y2="695" marker-end="url(#arrow)"/>
+        </svg>
+      </div>
+      <figcaption>왼쪽 네 묶음이 입력입니다. 빨간 점선 칩은 데이터에는 있지만 입력 경계 밖이라 쓰지 않는 것입니다. 현재 페이지 read · scroll은 방문이 끝나야 확정되는 사후값이고, 두 종류의 클릭은 test 파일에 없습니다. 기사 표현 e는 후보와 기록이 같은 가중치로 만들어, 후보가 기록의 어떤 기사와 닮았는지를 attention으로 잴 수 있게 합니다. gate α21은 기록이 없거나 후보와 맞지 않을 때 0에 가까워져 C1 = C0로 돌아갑니다.</figcaption>
+    </figure>
+
+    <div class="cols">
+      <section class="card">
+        <h2>모듈 요약</h2>
+        <ul>
+          <li><strong>①② 기사 표현</strong>: category · topic · sentiment 임베딩 + <code>Linear(768→128)</code> 어댑터를 거친 공식 벡터 → add → LayerNorm → 128D. 후보 · 기록 공유.</li>
+          <li><strong>④ impression 인코더</strong>: 시각(sinusoidal 128D) · 기기(임베딩 128D) → <code>Linear(256→128)</code> → I0.</li>
+          <li><strong>③ 후보 문맥 인코더</strong>: e_cand와 문맥 숫자 5개(최신 순위, 10분 노출 수 · 순위, 60분 노출 수 · 순위, 각 sinusoidal 128D) → <code>Linear(768→128)</code> → C0.</li>
+          <li><strong>⑧–⑩ cross-attention</strong>: Q = C0, K · V = H21 토큰, head 4 → P21. gate α21 = sigmoid(Linear([C0, P21])).</li>
+          <li><strong>⑪ ⑫</strong>: 8층 128D head 4 Transformer → Linear → 스칼라 점수.</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>알려진 위험</h2>
+        <ul>
+          <li>768D 벡터는 기사마다 고유해서 어댑터를 거쳐도 "이 기사"를 특정할 수 있습니다. train 주의 기사를 외우고 test 주의 새 기사에 일반화하지 못할 수 있습니다. 모델 B가 이 위험을 구조로 막습니다.</li>
+          <li>공식 768D 벡터가 어떤 텍스트(본문 포함 여부)로 만들어졌는지 확인되지 않았습니다.</li>
+          <li>기록 토큰에 클릭 시점 정보가 없어 3주 전 클릭과 어제 클릭이 같은 무게입니다.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>첫 실험: 입력을 하나씩 더하는 세 arm</h2>
+      <p>모델 구조와 학습 설정은 같고 입력만 켜고 끕니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>arm</th><th>기사 정보 · impression</th><th>개인 기록 H21</th><th>기간 내 인기</th><th>읽는 것</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A</strong></td><td class="keep">켜짐</td><td>꺼짐</td><td>꺼짐</td><td>기사 정보만의 실력. <code>C1 = C0</code>, 문맥 숫자는 최신 순위 하나</td></tr>
+            <tr><td><strong>B</strong></td><td class="keep">켜짐</td><td class="keep">켜짐</td><td>꺼짐</td><td><strong>B − A</strong>: 개인화의 순수 기여</td></tr>
+            <tr><td><strong>C</strong></td><td class="keep">켜짐</td><td class="keep">켜짐</td><td class="keep">켜짐</td><td><strong>C − B</strong>: 노출 정책 정보가 더하는 몫</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>arm마다 seed 3개, 합계 9회. 공식 validation 점수로 비교하고 test 점수는 선택에 쓰지 않습니다.</li>
+        <li>참고 수준: 우승팀 설정 000(인기 없음) 0.7699, 001(과거 인기 포함) 0.8680. A · B는 000, C는 001과 정보 수준이 가깝습니다. 피처와 학습 방식이 달라 직접 비교 기준은 아닙니다.</li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- ===================== 모델 B ===================== -->
+  <section class="section-break">
+    <header>
+      <div class="eyebrow">모델 B · 제안 (검증 전)</div>
+      <h2>제목 · 부제 임베딩을 관계 경로에만 쓰는 모델</h2>
+      <p class="lede">덴마크어 문장 인코더로 만든 제목 · 부제 임베딩을 후보와 개인 기록을 비교하는 cross-attention 안에서만 씁니다. 최종 후보 집합 Transformer에는 그 비교의 결과만 들어갑니다. 결과란 사용자의 과거 클릭 기사들을 attention 가중치로 섞은 벡터 o와, 후보와 얼마나 닮았는지를 나타내는 유사도 숫자입니다. 후보 자신의 텍스트 벡터는 들어가지 않습니다. 기사마다 고유한 벡터가 기사 ID처럼 외워지는 길을 막으려는 설계입니다.</p>
+    </header>
+    <div class="legend" aria-label="모델 B 범례">
+      <span><i class="sw keep"></i>쓰는 입력 (경계 안)</span>
+      <span><i class="sw frozen"></i>학습하지 않는 고정 입력</span>
+      <span><i class="sw"></i>학습되는 모듈</span>
+      <span><i class="sw cut"></i>일부러 막아 두는 경로</span>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg class="model" viewBox="0 0 1130 570" role="img" aria-label="모델 B 구조: 제목 · 부제 문장 임베딩과 기사 메타는 공유 기사 인코더에서 e가 됩니다. 후보의 e는 Q, 21일 기록의 e와 시간 임베딩은 K와 V가 되어 cross-attention을 거치고, 기록 쪽 가중합 o의 투영과 유사도 숫자가 후보 토큰 인코더로 갑니다. 후보 토큰 인코더는 이 관계 출력, 텍스트를 뺀 메타 임베딩, 기간 내 인기 숫자를 합쳐 후보 토큰을 만들고, impression 토큰과 함께 후보 집합 Transformer와 출력층을 거쳐 점수가 됩니다. 후보 텍스트 임베딩은 후보 토큰 인코더에 직접 들어가지 않습니다.">
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="arrowhead"/>
+          </marker>
+        </defs>
+
+        <rect class="grp" x="16" y="20" width="270" height="98" rx="8"/>
+        <text class="grp-title" x="28" y="40">기사 정보 (후보 · 기록 공통)</text>
+        <rect class="chip-frozen" x="26" y="52" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="68">제목 · 부제 → 덴마크어 문장 인코더 (고정)</text>
+        <rect class="chip" x="26" y="82" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="98">category · topic · sentiment</text>
+
+        <rect class="grp" x="16" y="140" width="270" height="68" rx="8"/>
+        <text class="grp-title" x="28" y="160">기록 쪽: 클릭 시점 정보</text>
+        <rect class="chip" x="26" y="172" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="188">클릭 후 경과 시간 · 같은 기사 클릭 수</text>
+
+        <rect class="grp" x="16" y="240" width="270" height="98" rx="8"/>
+        <text class="grp-title" x="28" y="260">후보 쪽: 기간 내 인기</text>
+        <rect class="chip" x="26" y="272" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="288">t 이전 10 · 60분 노출 수와 순위 (BA 제외)</text>
+        <rect class="chip" x="26" y="302" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="318">후보 내 최신 순위</text>
+
+        <rect class="grp" x="16" y="370" width="270" height="98" rx="8"/>
+        <text class="grp-title" x="28" y="390">impression · 개인 숫자 요약</text>
+        <rect class="chip" x="26" y="402" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="418">시각 · 기기</text>
+        <rect class="chip" x="26" y="432" width="250" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="448">H21 길이 · 마지막 클릭 이후 · 기록 없음</text>
+
+        <rect class="mod" x="336" y="30" width="200" height="80" rx="7"/>
+        <text class="mod-title" x="348" y="52">공유 기사 인코더</text>
+        <text class="mod-sub" x="348" y="71">텍스트 64D · 메타 임베딩</text>
+        <text class="mod-sub mono" x="348" y="88">concat → Linear → LN → e</text>
+        <line class="wire" x1="286" y1="69" x2="332" y2="69" marker-end="url(#arrow3)"/>
+
+        <path class="wire" d="M500,30 V10 H975 V146" marker-end="url(#arrow3)"/>
+        <text class="wire-label" x="620" y="24">m: 메타 임베딩만 (텍스트 제외)</text>
+
+        <rect class="mod" x="336" y="150" width="200" height="74" rx="7"/>
+        <text class="mod-title" x="348" y="172">기록 토큰 (H21, ≤100개)</text>
+        <text class="mod-sub" x="348" y="191">e_hist + 시간 구간 임베딩</text>
+        <text class="mod-sub" x="348" y="208">+ null 토큰 (기록 없음용)</text>
+        <line class="wire" x1="436" y1="110" x2="436" y2="146" marker-end="url(#arrow3)"/>
+        <text class="wire-label" x="442" y="133">e_hist</text>
+        <line class="wire" x1="286" y1="184" x2="332" y2="184" marker-end="url(#arrow3)"/>
+
+        <rect class="mod-strong" x="600" y="34" width="200" height="90" rx="7"/>
+        <text class="mod-title" x="612" y="56">후보 → 기록</text>
+        <text class="mod-title" x="612" y="74">cross-attention</text>
+        <text class="mod-sub" x="612" y="93">head 4 · 시간 bias (실험)</text>
+        <text class="mod-sub mono" x="612" y="111">o = Σ wᵢ · Vᵢ</text>
+        <line class="wire" x1="536" y1="50" x2="596" y2="50" marker-end="url(#arrow3)"/>
+        <text class="wire-label" x="542" y="44">Q = e_cand</text>
+        <path class="wire" d="M536,187 H566 V100 H596" marker-end="url(#arrow3)"/>
+        <text class="wire-label" x="572" y="160">K, V</text>
+
+        <rect class="mod" x="600" y="160" width="200" height="90" rx="7"/>
+        <text class="mod-title" x="612" y="182">관계 출력 (벡터 + 숫자)</text>
+        <text class="mod-sub" x="612" y="201">o → 64D 투영 (기록 쪽)</text>
+        <text class="mod-sub mono" x="612" y="218">cos(o, e_cand)</text>
+        <text class="mod-sub" x="612" y="235">최대 · head별 유사도 · 엔트로피</text>
+        <line class="wire" x1="700" y1="124" x2="700" y2="156" marker-end="url(#arrow3)"/>
+
+        <rect class="mod" x="850" y="150" width="250" height="110" rx="8"/>
+        <text class="mod-title" x="864" y="174">후보 토큰 인코더</text>
+        <text class="mod-sub" x="864" y="194">[o 투영 · 관계 숫자 · m · 인기]</text>
+        <text class="mod-sub" x="864" y="212">concat → MLP → C (128D)</text>
+        <text class="cut-tag" x="864" y="240">✕ e_cand · o⊙e_cand는 넣지 않음</text>
+        <line class="wire" x1="800" y1="205" x2="846" y2="205" marker-end="url(#arrow3)"/>
+        <path class="wire" d="M286,302 H820 V240 H846" marker-end="url(#arrow3)"/>
+        <text class="wire-label" x="600" y="295">기간 내 인기 숫자</text>
+
+        <rect class="mod" x="336" y="385" width="200" height="66" rx="7"/>
+        <text class="mod-title" x="348" y="410">impression 인코더</text>
+        <text class="mod-sub" x="348" y="430">시각 · 기기 · H21 숫자 → I0</text>
+        <line class="wire" x1="286" y1="418" x2="332" y2="418" marker-end="url(#arrow3)"/>
+        <path class="wire" d="M536,418 H820 V350 H846" marker-end="url(#arrow3)"/>
+        <text class="wire-label" x="600" y="410">I0 (impression 토큰)</text>
+
+        <rect class="mod-strong" x="850" y="300" width="250" height="96" rx="8"/>
+        <text class="mod-title" x="864" y="324">후보 집합 Transformer</text>
+        <text class="mod-sub" x="864" y="344">8층 · 128D · head 4 · 위치 정보 없음</text>
+        <text class="mod-sub mono" x="864" y="366">입력 [I0, C₁, …, Cₙ]</text>
+        <line class="wire" x1="975" y1="260" x2="975" y2="296" marker-end="url(#arrow3)"/>
+
+        <rect class="mod" x="850" y="426" width="250" height="44" rx="7"/>
+        <text class="mod-title" x="864" y="453">출력층 → 후보별 점수</text>
+        <line class="wire" x1="975" y1="396" x2="975" y2="422" marker-end="url(#arrow3)"/>
+
+        <rect class="mod" x="850" y="500" width="250" height="44" rx="7"/>
+        <text class="mod-title" x="864" y="527">loss: BCE + ListNet</text>
+        <line class="wire" x1="975" y1="470" x2="975" y2="496" marker-end="url(#arrow3)"/>
+
+        <rect class="label-box" x="600" y="500" width="200" height="44" rx="7"/>
+        <text class="mod-title" x="612" y="518">정답 (클릭 여부)</text>
+        <text class="mod-sub" x="612" y="535">학습 목표로만 사용</text>
+        <line class="wire" x1="800" y1="522" x2="846" y2="522" marker-end="url(#arrow3)"/>
+      </svg>
+      </div>
+      <figcaption>텍스트 임베딩은 공유 기사 인코더를 거쳐 cross-attention의 Q(후보)와 K · V(기록)로만 쓰입니다. 후보 토큰 인코더가 받는 기사 정보는 관계 출력(o 투영과 유사도 숫자), 텍스트를 뺀 메타 임베딩 m, 기간 내 인기 숫자뿐입니다. o는 이 사용자가 과거에 클릭한 기사들의 가중합이라, 후보는 섞는 비율에만 영향을 주고 후보가 어떤 기사인지는 거의 담기지 않습니다. 인기 숫자는 Q에 넣지 않습니다. 기록 기사에는 같은 뜻의 값이 없어서 매칭이 흐려지기 때문입니다.</figcaption>
+    </figure>
+
+    <div class="cols">
+      <section class="card">
+        <h2>설계 규칙</h2>
+        <ul>
+          <li><strong>매칭은 내용으로, 인기는 그 뒤에.</strong> Q · K에는 텍스트와 메타로 만든 e만 넣고, 노출 수 · 순위는 후보 토큰 인코더에서 합칩니다.</li>
+          <li><strong>후보와 기록은 같은 인코더.</strong> 같은 공간에 있어야 "의미가 가깝다"는 비교가 성립합니다.</li>
+          <li><strong>메타는 이어 붙인 뒤 줄이기.</strong> 고정된 텍스트 64D와 학습되는 메타 임베딩은 크기와 분포가 달라, concat → Linear → LayerNorm으로 128D를 만듭니다.</li>
+          <li><strong>기록 쪽 시간은 차원을 맞춰 더하기.</strong> 클릭 후 경과 시간과 클릭 수를 log 구간 임베딩(128D)으로 바꿔 e_hist에 더합니다. 대안은 시간을 attention 점수에 더하는 bias. 둘 중 무엇이 나은지는 실험으로 정합니다.</li>
+          <li><strong>빈 기록용 null 토큰.</strong> 21일 클릭이 0인 사용자도 attention이 갈 곳이 있어야 합니다.</li>
+          <li><strong>o 벡터는 넘기고, 후보 벡터는 넘기지 않기.</strong> o는 기록 쪽 가중합이라 암기 위험이 작고 숫자만 넘길 때보다 표현력이 큽니다. <code>e_cand</code>와 <code>o ⊙ e_cand</code>는 후보 신원을 실어 나르므로 막습니다.</li>
+          <li><strong>인코더는 고정.</strong> 125,541개 기사를 한 번만 인코딩하고 미세조정하지 않습니다.</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>모델 A와 다른 점</h2>
+        <ul>
+          <li>모델 A는 공식 768D 벡터를 기사 표현에 넣어 후보 토큰에도 그대로 들어갑니다. 모델 B는 텍스트를 후보 토큰에서 뺍니다.</li>
+          <li>텍스트 출처가 공식 벡터에서 제목 · 부제 문장 임베딩으로 바뀝니다. 어느 인코더를 쓸지는 학습 없는 유사도 AUC(models.md 3절)로 고릅니다.</li>
+          <li>기록 토큰에 클릭 시점 정보와 null 토큰이 추가됩니다.</li>
+          <li>모델 A의 후보 문맥 인코더와 gate 융합이 후보 토큰 인코더 하나로 합쳐집니다.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>o가 담는 정보</h2>
+      <p>o는 "이 후보와 관련된, 이 사용자의 과거 관심사 요약"입니다. 21일 클릭이 축구 10개 · 정치 5개 · 날씨 2개인 사용자라면, 축구 후보에는 o가 축구 클릭들의 가중 평균에 가까워지고, 아무것과도 맞지 않는 후보에는 attention이 null 토큰으로 가서 "관련 관심사 없음"이 됩니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>담기를 기대하는 정보</th><th>어디서 오나</th><th>유사도 숫자만으로는</th></tr></thead>
+          <tbody>
+            <tr><td><strong>어느 관심사와 맞았나</strong></td><td>attention이 고른 기록 기사들의 내용</td><td>"얼마나 닮았나"만 알고 "무엇과"는 모름</td></tr>
+            <tr><td><strong>맞은 클릭의 시점 · 반복</strong></td><td>V에 더한 시간 · 클릭 수 임베딩</td><td>어제 세 번 읽은 주제와 3주 전 한 번 본 주제를 구분하기 어려움</td></tr>
+            <tr><td><strong>맞은 기록의 성격</strong></td><td>V 안의 category · sentiment</td><td>"부정적 논조의 사건 기사에 반응해 왔다" 같은 정보가 사라짐</td></tr>
+            <tr><td><strong>매칭이 한쪽에 몰렸나</strong></td><td>o의 크기</td><td>엔트로피 숫자로 일부만 전달</td></tr>
+            <tr><td><strong>같은 화면 후보끼리의 비교</strong></td><td>후보마다 생기는 o를 Transformer가 견줌</td><td>핵심 관심사와 주변 관심사에 닿는 후보를 구분하기 어려움</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>담기면 안 되는 것:</strong> 후보 기사 자체의 신원. 후보는 섞는 비율 wᵢ에만 영향을 줍니다.</li>
+        <li><strong>남는 위험:</strong> 후보와 같은 기사가 21일 기록에 이미 있으면 o가 그 기사 벡터와 거의 같아질 수 있습니다. 그 기록을 attention에서 빼는 방식과 두는 방식을 비교합니다.</li>
+        <li><strong>확인 방법:</strong> o만으로 후보 category를 맞히는 probe는 잘 맞아야 하고, 후보 기사 ID probe는 거의 못 맞혀야 합니다.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>확인 실험</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>비교</th><th>바꾸는 것</th><th>읽는 것</th></tr></thead>
+          <tbody>
+            <tr><td>텍스트 출처</td><td>공식 768D · 문장 인코더 · 텍스트 없음 (메타만)</td><td>텍스트의 순수 기여</td></tr>
+            <tr><td>shuffle 대조</td><td>기사 사이에서 텍스트 임베딩을 섞음</td><td>성능이 남으면 의미가 아니라 지문(fingerprint) 효과</td></tr>
+            <tr><td>관계 출력 폭</td><td>숫자만 · 숫자 + o (기본안) · 숫자 + o + e_cand (막은 경로를 연 상한선)</td><td>o의 표현력. e_cand 쪽이 train에서만 좋아지면 암기 증거</td></tr>
+            <tr><td>시간 넣는 방식</td><td>구간 임베딩 더하기 · attention bias</td><td>최근 클릭 가중을 어느 쪽이 더 잘 배우는지</td></tr>
+            <tr><td>투입 위치</td><td>관계 경로만 · 후보 토큰에도 직접</td><td>"후보 토큰에 넣지 않는다" 규칙의 효과</td></tr>
+            <tr><td>같은 기사 처리</td><td>attention에서 제외 · 그대로</td><td>남는 위험의 크기</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== 우승팀 참고 ===================== -->
+  <section class="section-break">
+    <header>
+      <div class="eyebrow">참고 · 2024 우승팀 단일 Transformer</div>
+      <h2>원본 모델 v1170 (설정 111)</h2>
+      <p class="lede">공개 코드의 실제 입력 목록을 그대로 옮겼습니다. 개인 기록은 순서대로 읽지 않고 후보마다 숫자 요약과 topic · category 유사도로만 들어갑니다. 대신 노출 기록으로 만든 피처가 많습니다. 보라색은 우리 경계 안의 과거 노출, 빨간 점선은 우리 경계 밖의 미래 정보입니다.</p>
+    </header>
+    <div class="legend" aria-label="원본 모델 범례">
+      <span><i class="sw keep"></i>test에 주어지는 과거 정보</span>
+      <span><i class="sw policy"></i>이번 주 과거 노출 기록 (노출 정책이 담김)</span>
+      <span><i class="sw cut"></i>미래 정보 (우리 경계 밖)</span>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg class="model" viewBox="0 0 1130 550" role="img" aria-label="우승팀 v1170 모델 구조: impression 피처 묶음은 impression 집계층을 거쳐 I0 토큰이 되고, 기사 자체, history 매칭, 과거 노출, 미래 노출, 기사 누적치로 된 후보 피처 묶음은 후보 집계층에서 128차원 후보 토큰이 됩니다. 두 토큰이 8층 후보 집합 Transformer와 출력층을 거쳐 후보별 점수가 되고, 정답은 BCE loss에만 쓰입니다.">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="arrowhead"/>
+          </marker>
+        </defs>
+        <rect class="grp" x="16" y="20" width="350" height="158" rx="8"/>
+        <text class="grp-title" x="28" y="40">impression 피처 (화면 1개)</text>
+        <rect class="chip" x="26" y="52" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="68">시각 · 기기 · read_time · scroll</text>
+        <rect class="chip" x="26" y="82" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="98">history 마지막 클릭 이후 시간 · 클릭 수</text>
+        <rect class="chip-policy" x="26" y="112" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="128">이번 주 직전 노출 이후 시간 · 노출 횟수</text>
+        <text class="policy-tag" x="348" y="128" text-anchor="end">과거 노출</text>
+        <rect class="chip-cut" x="26" y="142" width="330" height="24" rx="5"/>
+        <text class="cut-text" x="36" y="158">다음 노출까지 시간 · 이후 노출 횟수</text>
+        <text class="cut-tag" x="348" y="158" text-anchor="end">미래</text>
+        <rect class="grp" x="16" y="200" width="350" height="308" rx="8"/>
+        <text class="grp-title" x="28" y="220">후보 피처 (기사마다)</text>
+        <rect class="chip" x="26" y="232" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="248">① sentiment · 경과 시간 · 최신 순위 · topic · category</text>
+        <rect class="chip" x="26" y="262" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="278">② 이 후보를 history에서 클릭했나 (횟수 · 순서 · 시간)</text>
+        <rect class="chip" x="26" y="292" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="308">② 후보와 history의 topic · category 겹침 순위</text>
+        <rect class="chip" x="26" y="322" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="338">② topic · category 임베딩 유사도 (학습)</text>
+        <rect class="chip-policy" x="26" y="352" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="368">③ 이번 주 이 사용자에게 이미 노출 (횟수 · 순서)</text>
+        <rect class="chip-policy" x="26" y="382" width="330" height="24" rx="5"/>
+        <text class="chip-text" x="36" y="398">④ 전체 최근 10 · 60분 노출 · read · scroll</text>
+        <text class="policy-tag" x="348" y="398" text-anchor="end">111에선 꺼짐</text>
+        <rect class="chip-cut" x="26" y="412" width="330" height="24" rx="5"/>
+        <text class="cut-text" x="36" y="428">⑤ 이 사용자에게 이후 다시 노출 (횟수 · 순서)</text>
+        <rect class="chip-cut" x="26" y="442" width="330" height="24" rx="5"/>
+        <text class="cut-text" x="36" y="458">⑥ 전체 앞뒤 창 (−5~+5, −5~+55, −55~+5분)</text>
+        <rect class="chip-cut" x="26" y="472" width="330" height="24" rx="5"/>
+        <text class="cut-text" x="36" y="488">⑦ 기사 7일 누적 (노출 · 페이지뷰 · 체류)</text>
+        <rect class="mod" x="420" y="59" width="220" height="80" rx="7"/>
+        <text class="mod-title" x="432" y="81">impression 집계층</text>
+        <text class="mod-sub" x="432" y="99">숫자 → sinusoidal 128D, 기기 임베딩</text>
+        <text class="mod-sub" x="432" y="117">concat → Linear → BN → ReLU → I0</text>
+        <line class="wire" x1="366" y1="99" x2="416" y2="99" marker-end="url(#arrow2)"/>
+        <rect class="mod" x="420" y="299" width="220" height="110" rx="7"/>
+        <text class="mod-title" x="432" y="321">후보 집계층</text>
+        <text class="mod-sub" x="432" y="339">숫자 → sinusoidal 128D</text>
+        <text class="mod-sub" x="432" y="356">topic · category 임베딩 · 유사도</text>
+        <text class="mod-sub" x="432" y="373">concat → Dropout → Linear</text>
+        <text class="mod-sub" x="432" y="390">→ BN → ReLU → 후보 토큰 128D</text>
+        <line class="wire" x1="366" y1="354" x2="416" y2="354" marker-end="url(#arrow2)"/>
+        <rect class="mod-strong" x="760" y="200" width="300" height="90" rx="8"/>
+        <text class="mod-title" x="774" y="224">후보 집합 Transformer</text>
+        <text class="mod-sub" x="774" y="244">8층 · 128D · head 4 · 위치 정보 없음</text>
+        <text class="mod-sub mono" x="774" y="266">입력 [I0, 후보₁, …, 후보ₙ]</text>
+        <path class="wire" d="M640,99 H910 V196" marker-end="url(#arrow2)"/>
+        <text class="wire-label" x="660" y="91">I0 (impression 토큰)</text>
+        <path class="wire" d="M640,354 H700 V245 H756" marker-end="url(#arrow2)"/>
+        <text class="wire-label" x="708" y="300">후보 토큰들</text>
+        <rect class="mod" x="760" y="320" width="300" height="50" rx="7"/>
+        <text class="mod-title" x="774" y="350">출력층 → 후보별 점수</text>
+        <line class="wire" x1="910" y1="290" x2="910" y2="316" marker-end="url(#arrow2)"/>
+        <rect class="mod" x="760" y="400" width="300" height="50" rx="7"/>
+        <text class="mod-title" x="774" y="422">loss: BCE</text>
+        <text class="mod-sub" x="774" y="440">사용자당 노출 2개 샘플링 · AdamW</text>
+        <line class="wire" x1="910" y1="370" x2="910" y2="396" marker-end="url(#arrow2)"/>
+        <rect class="label-box" x="760" y="480" width="300" height="50" rx="7"/>
+        <text class="mod-title" x="774" y="502">정답 (클릭 여부)</text>
+        <text class="mod-sub" x="774" y="520">loss에만 사용 · 클릭 피처는 없음</text>
+        <line class="wire" x1="910" y1="480" x2="910" y2="454" marker-end="url(#arrow2)"/>
+      </svg>
+      </div>
+      <figcaption>왼쪽 두 묶음의 피처가 각각 토큰 하나로 압축된 뒤 Transformer에 들어갑니다. 설정 이름 111은 미래 노출, 기사 7일 누적치, 이번 주 과거 노출을 모두 켰다는 뜻입니다. 이 설정에서는 ④ 대신 ⑥이 현재를 감싸는 앞뒤 구간의 인기를 담습니다. ⑤ ⑥ ⑦과 impression의 "다음 노출" 피처, 그리고 read_time · scroll은 우리 입력 경계 밖입니다.</figcaption>
+    </figure>
+
+    <section class="card">
+      <h2>설정별로 켜지는 묶음과 보고된 AUC</h2>
+      <p>validation 점수인지 hidden test 점수인지는 확인이 필요합니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>설정</th><th>켜지는 피처</th><th>AUC</th></tr></thead>
+          <tbody>
+            <tr><td><code>000</code></td><td>impression 기본과 history 요약, ① 기사 자체, ② history 매칭</td><td>0.7699</td></tr>
+            <tr><td><code>001</code></td><td>위 + 이번 주 과거 노출 (③, ④, impression의 직전 노출 피처)</td><td>0.8680</td></tr>
+            <tr><td><code>111</code></td><td>위 + 미래 노출 (⑤, ⑥, impression의 다음 노출 피처) + 기사 7일 누적 (⑦). ④는 꺼짐</td><td>0.8864</td></tr>
+            <tr><td>앙상블</td><td></td><td>0.8924</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>세 모델의 차이</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>항목</th><th>우승팀 v1170</th><th>모델 A</th><th>모델 B</th></tr></thead>
+          <tbody>
+            <tr><td>개인 기록</td><td>후보마다 숫자 요약 + topic · category 유사도</td><td>후보가 기록 기사들을 직접 보는 cross-attention</td><td>같음 + 시간 임베딩 + null 토큰</td></tr>
+            <tr><td>기사 내용</td><td>사용 안 함 (메타만)</td><td>공식 768D 벡터를 기사 표현에 더함</td><td>문장 임베딩, 관계 경로에만</td></tr>
+            <tr><td>과거 노출</td><td>③ 이 사용자 이전 노출, ④ 전체 최근 인기</td><td>전체 최근 10 · 60분 노출 수만</td><td>같음</td></tr>
+            <tr><td>미래 정보</td><td>⑤ ⑥ ⑦ 사용</td><td>사용 안 함</td><td>사용 안 함</td></tr>
+            <tr><td>현재 페이지 read/scroll</td><td>사용</td><td>사용 안 함 (경계 밖)</td><td>사용 안 함</td></tr>
+            <tr><td>공통 부분</td><td colspan="3">후보 집합 Transformer 8층 · 128D · head 4, 출력층, 위치 정보 없음</td></tr>
+            <tr><td>loss</td><td>BCE</td><td>BCE + ListNet (λ=0.1)</td><td>BCE + ListNet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</div>
+</body>
+</html>
