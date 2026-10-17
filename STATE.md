@@ -4,7 +4,7 @@
 
 ## 현재 위치
 
-U1–U5 완료, U6 제출함(Codabench 채점 대기). Observer 검토 완료, 지적 처분 적용 중(U7 · U8). 둘째 묶음은 워크플로에 Plan 도입. 맥락은 다른 세션(ebnerd-lab-31)에서 가져오는 중.
+U1–U5 · U7 · U8 완료, U6 제출함(Codabench 채점 대기). Observer 지적 처분 적용 끝. 둘째 묶음 "Plan 도입" 안을 사용자에게 올려 승인 대기.
 
 ## 현재 묶음: 끝에서 끝까지 한 번
 
@@ -18,7 +18,7 @@ U1–U5 완료, U6 제출함(Codabench 채점 대기). Observer 검토 완료, �
 | U4 공식 지표 | QA → Coder | 완료 |
 | U5 recency 기준선 + 평가 · 제출 스크립트 | Coder | 완료. validation AUC 0.5004 · MRR 0.3067 · nDCG@5 0.3355 · nDCG@10 0.4207 (무작위 수준. 누설 신호 `total_inviews`로 평가기 정상 확인) |
 | U6 Codabench 제출, hidden 점수를 이 파일에 기록 | 사용자 + Architect | 제출함, 채점 대기 |
-| U7 제출 전 behaviors 대조 검사 + test 스키마 연쇄 테스트(Observer 지적 2 · 3) | Coder | 착수 |
+| U7 제출 전 behaviors 대조 검사 + test 스키마 연쇄 테스트(Observer 지적 2 · 3) | Coder | 완료. 제출한 zip과 바이트 동일 확인 |
 | U8 torch를 cu128 index로 re-lock(Observer 지적 1) · docs 정리(지적 4 · 6) | Architect | 완료 |
 
 ### U7 제출 검사 + test 스키마 연쇄 테스트 명세
