@@ -48,3 +48,16 @@ impression 단위로 계산해 평균한다. 주 지표 AUC, 보조 MRR · nDCG@
 - 경쟁 2469 "Ekstra Bladet News Recommendation Competition". phase 0 "RecSys '24 Competition"(2024-04-03 – 06-22, 종료), phase 1 "EB-NeRD official testset"(2024-06-23 – 종료일 없음, Current). 하루 제출 상한 API 10 · 안내문 5. 채점은 최대 수 시간.
 - 제출 형식: `predictions.txt`만 담은 zip. 한 줄 `impression_id [순위,...]`. 순위는 1..n 정수(1이 최고). 행 순서는 test behaviors 원본과 같아야 한다. 예시 파일 `predictions_large_random.zip`(220 MB)이 공식 S3에 있다.
 - worker는 조직자가 직접 운영한다. 2025-07-26 채점 실패(codabench #1951), 2025-08-03 복구.
+
+## 원본 sha256(2026-10-17, `$EBNERD_DATA_ROOT/raw/`, Windows 원본과 일치 확인)
+
+| 파일 | sha256 |
+|---|---|
+| articles.parquet | 07ee3568d8f003c04f67ff8c47a4b70609208ca8146ea5700fc5f4a9e620f74b |
+| contrastive_vector.parquet | fd62c019cc017c47e21c73260ee1bdf41c9903876cd00996459fac2502e24d38 |
+| train/behaviors.parquet | d83fc7af80d9e32699795bd13f106b76ffeeed75432f9627b894e64f8d283439 |
+| train/history.parquet | 35402446c2572ae21fe7a68dbd5887abc4a2acb0303ac7d18bff0e87cf73fb1d |
+| validation/behaviors.parquet | fefad78740a05addf9c9c91c77eae21c5d6199b607664757bcf36d90933af6f7 |
+| validation/history.parquet | a793587eabbe0a7d30dcc3075965188d073e5bf2f5a2f8072077228bc4a365f0 |
+| test/behaviors.parquet | f42c0b8ee2a887d052412f88e9ba017aa104ecba9b4620b65ef44e305882281f |
+| test/history.parquet | 8b272180bf6137320f48539fe5daad77d6b9b085983fe9bea3086e3ebb16ace8 |
