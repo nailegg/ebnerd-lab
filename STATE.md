@@ -14,7 +14,7 @@ WSL ext4로 이전 완료. U1 · U2 완료. 첫 묶음 "끝에서 끝까지 한 
 |---|---|---|
 | U1 환경: `uv.lock` 커밋, `.env` 경로, `uv sync` · ruff 통과 | Architect | 완료 |
 | U2 원본 복사: D7 배치로 복사, sha256을 `docs/data.md`에 기록 | Architect(셸) | 완료 |
-| U3 로더 | Coder | 착수 |
+| U3 로더 | Coder | 완료 |
 | U4 공식 지표 | QA → Coder | 착수 |
 | U5 recency 기준선 + 평가 · 제출 스크립트 | Coder | 대기(U3 · U4 뒤) |
 | U6 Codabench 제출, hidden 점수를 이 파일에 기록 | 사용자 + Architect | 대기 |
