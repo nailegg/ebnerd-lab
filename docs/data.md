@@ -12,6 +12,7 @@ EB-NeRD Large와 공식 test set에 대해 확인된 사실. 결정이 아니라
 
 - `behaviors.parquet` 주요 열: `impression_id`, `user_id`, `impression_time`, `article_id`(현재 페이지, 결측 가능), `article_ids_inview`(후보 list), `article_ids_clicked`(라벨, train · validation만), `read_time`, `scroll_percentage`, `device_type`, `session_id`, `is_sso_user`, `gender`, `postcode`, `age`, `is_subscriber`, `next_read_time`, `next_scroll_percentage`.
 - test에는 `article_id`, `article_ids_clicked`, `next_read_time`, `next_scroll_percentage`가 없고 `is_beyond_accuracy`가 있다.
+- validation `article_ids_clicked`에 같은 기사가 두 번 든 impression이 있다(클릭 12,649,444건 중 고유 12,616,005건). inview에는 중복이 없고, clicked ⊄ inview인 행도 없다.
 - `history.parquet`: split 노출 기간 직전 21일의 클릭. 사용자당 4개 list: `impression_time_fixed`, `scroll_percentage_fixed`, `article_id_fixed`, `read_time_fixed`. 사용자 수 train 788,090 / validation 791,582 / test 807,677.
 - 시각은 timezone 정보가 없는 naive 값이다.
 

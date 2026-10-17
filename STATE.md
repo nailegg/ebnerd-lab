@@ -4,7 +4,7 @@
 
 ## 현재 위치
 
-WSL ext4로 이전 완료. U1–U4 완료. 첫 묶음 "끝에서 끝까지 한 번" 진행 중: U5 착수.
+U1–U5 완료. 남은 것은 U6: 사용자가 `$EBNERD_DATA_ROOT/runs/recency/predictions_recency.zip`을 Codabench에 제출하고 hidden 점수를 받는다. 그 뒤 Observer 검토.
 
 ## 현재 묶음: 끝에서 끝까지 한 번
 
@@ -16,7 +16,7 @@ WSL ext4로 이전 완료. U1–U4 완료. 첫 묶음 "끝에서 끝까지 한 �
 | U2 원본 복사: D7 배치로 복사, sha256을 `docs/data.md`에 기록 | Architect(셸) | 완료 |
 | U3 로더 | Coder | 완료 |
 | U4 공식 지표 | QA → Coder | 완료 |
-| U5 recency 기준선 + 평가 · 제출 스크립트 | Coder | 착수 |
+| U5 recency 기준선 + 평가 · 제출 스크립트 | Coder | 완료. validation AUC 0.5004 · MRR 0.3067 · nDCG@5 0.3355 · nDCG@10 0.4207 (무작위 수준. 누설 신호 `total_inviews`로 평가기 정상 확인) |
 | U6 Codabench 제출, hidden 점수를 이 파일에 기록 | 사용자 + Architect | 대기 |
 
 ### U3 로더 명세
@@ -42,8 +42,9 @@ WSL ext4로 이전 완료. U1–U4 완료. 첫 묶음 "끝에서 끝까지 한 �
 
 - 목표: 후보를 `published_time` 최신순으로 순위화해 validation 로컬 점수를 내고 test 제출 zip을 만든다.
 - 범위: `src/ebnerd/eval/submission.py`, `scripts/rank_recency.py`, `scripts/evaluate.py`, `scripts/make_submission.py`, 각 테스트.
-- 인터페이스: `scores_to_ranks(scores) -> ranks`(1이 최고, 동률은 입력 순서). `rank_recency.py --split S --out P`는 behaviors 행 순서 그대로 `impression_id, ranks(list)` parquet. `evaluate.py --split S --ranks P`는 행 순서로 라벨과 맞춰 네 지표를 출력(score = −rank). `make_submission.py --ranks P --out Z`는 D6 형식의 zip.
-- 성공 기준: validation AUC > 0.5. test zip은 행 수 13,536,710, 행 순서 원본과 동일, 각 행의 순위가 1..n 순열. `published_time` 결측은 가장 오래된 것으로 취급.
+- 인터페이스: `rank_recency.py --split S --out P`는 behaviors 행 순서 그대로 `impression_id, ranks(list)` parquet. `evaluate.py --split S --ranks P`는 행 순서로 라벨과 맞춰 네 지표를 출력(score = −rank). `make_submission.py --ranks P --out Z`는 D6 형식의 zip.
+- 성공 기준: validation AUC > 0.5. test zip은 행 수 13,536,710, 행 순서 원본과 동일, 각 행의 순위가 1..n 순열. `published_time` 결측은 가장 오래된 것으로 취급(1900-01-01로 채움). `article_ids_clicked`에 같은 기사가 두 번 든 impression이 있으므로(`docs/data.md`) 라벨은 중복 제거 후 만든다.
+- 메모리: WSL VM 상한 15 GB. `evaluate.py`는 behaviors를 100만 행 단위로 잘라 slice마다 long 배열(int32)을 만들어 `impression_metrics`를 부르고, slice의 impression 수로 가중 평균한다(impression 평균이므로 정확히 같다). 실데이터 실행은 `systemd-run --user --scope -p MemoryMax=11G`로 상한을 건다.
 - 금지: 모델 학습, feature 저장, split 이름 분기.
 - QA: 없음.
 
