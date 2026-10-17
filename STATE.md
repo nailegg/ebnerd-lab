@@ -8,13 +8,7 @@
 
 ## 현재 묶음
 
-없음. 다음 세션에서 정한다. 후보 단위와 평가에서 나온 성공 기준:
-
-- **환경** — WSL ext4에 clone, `pyproject.toml`에 CUDA 12.8 torch index 명시, `uv lock`, `uv sync` · `pytest` · `ruff` 통과, `uv.lock` 커밋.
-- **원본 데이터 복사** — Windows 원본을 `$EBNERD_DATA_ROOT/raw/`로. sha256 확인.
-- **로더** — 세 split을 같은 함수로 연다. §2 금지 열을 로드 시 제거, 라벨은 분리 객체로 반환, test 스키마 합성 프레임 스모크 테스트.
-- **공식 지표**(QA) — impression 단위 AUC · MRR · nDCG@5 · nDCG@10. 느린 정답 구현과 대조.
-- **Codabench 확인**(코드 없음) — hidden test 제출이 아직 가능한지. 불가능하면 D1을 다시 정한다.
+없음. 다음 세션에서 정한다. 후보 단위: 환경(`uv.lock` 생성 · 커밋), 원본 데이터 복사(sha256 확인), 로더(성공 기준은 §2 집행 항목), 공식 지표(QA, `docs/data.md`의 네 지표), Codabench 제출 가능 여부 확인(코드 없음).
 
 ## 유효한 결정
 

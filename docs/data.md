@@ -35,6 +35,10 @@ EB-NeRD Large와 공식 test set에 대해 확인된 사실. 결정이 아니라
 - Windows에서 보통 방식으로 띄운 장시간 프로세스는 Claude Code 세션 종료와 함께 죽었다. WSL로 옮기는 이유 중 하나다.
 - 참고 수치(이전 구현, DuckDB, 전체 데이터): split당 feature 빌드 30–90분, 최대 메모리 약 14 GB.
 
+## 공식 지표
+
+impression 단위로 계산해 평균한다. 주 지표 AUC, 보조 MRR · nDCG@5 · nDCG@10. 제출은 impression마다 inview 후보의 순위 list.
+
 ## 2024 우승팀 참고치(공식 validation AUC)
 
 단일 Transformer(v1170): 미래 · 과거 노출 정보 없음 0.7699, 과거만 0.8680, 미래 포함 0.8864, 앙상블 0.8924. 피처와 프로토콜이 달라 직접 비교 기준은 아니다.
